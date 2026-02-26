@@ -1,4 +1,4 @@
-# Goodmem MCP Server
+# Goodmem Claude Plugin
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
