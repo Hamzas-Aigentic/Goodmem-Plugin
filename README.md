@@ -4,7 +4,15 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-1.12-green.svg)](https://modelcontextprotocol.io/)
 
-Give Claude Code persistent memory across conversations. Store, search, and retrieve project knowledge — architectural decisions, feature docs, implementation details — via semantic search powered by [Goodmem](https://github.com/goodmem/goodmem).
+Give Claude Code persistent memory across conversations. Store, search, and retrieve project knowledge — architectural decisions, feature docs, implementation details — via semantic search powered by [Goodmem](https://goodmem.ai/).
+
+## What is Goodmem?
+
+[Goodmem](https://goodmem.ai/) is agentic AI memory infrastructure. It gives AI tools persistent memory via vector-based semantic search — documents are chunked, embedded, and stored so they can be retrieved by natural language queries. Claude Code has no memory between sessions; Goodmem bridges that gap.
+
+- **Website:** [goodmem.ai](https://goodmem.ai/)
+- **Documentation:** [docs.goodmem.ai](https://docs.goodmem.ai/docs/)
+- **Quick Start:** [goodmem.ai/quick-start](https://goodmem.ai/quick-start)
 
 ## Features
 
@@ -19,8 +27,32 @@ Give Claude Code persistent memory across conversations. Store, search, and retr
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 18+
-- A running [Goodmem](https://github.com/goodmem/goodmem) server
+- A running Goodmem server (see below)
 - A Goodmem API key
+
+## Setting Up Goodmem
+
+### Install Locally
+
+```bash
+curl -s "https://get.goodmem.ai" | bash
+```
+
+Installs the server, web console, CLI, and all dependencies. Windows users should install via [WSL](https://learn.microsoft.com/en-us/windows/wsl/).
+
+### Deploy to Cloud
+
+```bash
+# Railway
+curl -s https://get.goodmem.ai/railway | bash
+
+# Fly.io
+curl -s https://get.goodmem.ai/flyio | bash
+```
+
+> **Save your API key.** The installer outputs a Root API Key (`gm_xxx...`) — this is your `GOODMEM_API_KEY` for the plugin. It only appears once.
+
+For full setup details, see the [Goodmem Quick Start](https://goodmem.ai/quick-start) and [documentation](https://docs.goodmem.ai/docs/).
 
 ## Quick Start
 
