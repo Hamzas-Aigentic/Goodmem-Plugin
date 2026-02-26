@@ -14,7 +14,7 @@ Give Claude Code persistent memory across conversations. Store, search, and retr
 - **15 MCP tools** for ingesting, searching, and managing project memory
 - **10 slash commands** for quick access to common workflows
 - **LLM-powered smart search** with synthesized answers (via OpenRouter)
-- **Integration tests** against a live Goodmem API
+- **Bulk ingestion** of entire documentation directories
 
 ## Prerequisites
 
@@ -149,16 +149,6 @@ npm install
 npm run build
 ```
 
-### Test
-
-Integration tests run against a live Goodmem API:
-
-```bash
-GOODMEM_API_KEY=your-key GOODMEM_API_URL=https://localhost:8080 npm test
-```
-
-Tests skip gracefully if `GOODMEM_API_KEY` is not set.
-
 ### Project Structure
 
 ```
@@ -173,7 +163,6 @@ src/
     ├── manage.ts         # list/get/delete memories and spaces
     └── smart-search.ts   # smart_search with LLM synthesis
 skills/                   # Claude Code slash commands
-tests/                    # Integration tests (Vitest)
 docs/                     # Architecture documentation
 ```
 

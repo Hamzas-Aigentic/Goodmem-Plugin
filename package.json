@@ -8,9 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "start": "node build/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
@@ -18,8 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.2",
-    "typescript": "^5.8.3",
-    "vitest": "^4.0.18"
+    "typescript": "^5.8.3"
   },
   "files": [
     "build"
