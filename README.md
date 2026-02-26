@@ -56,7 +56,7 @@ For full setup details, see the [Goodmem Quick Start](https://goodmem.ai/quick-s
 
 ## Quick Start
 
-### 1. Add the MCP server to Claude Code
+### 1. Add the plugin to Claude Code
 
 ```bash
 claude mcp add goodmem \
