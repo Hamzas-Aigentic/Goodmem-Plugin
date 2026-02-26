@@ -1,12 +1,12 @@
-# Goodmem MCP Server
+# Goodmem Claude Plugin
 
 ## What It Is
 
-A TypeScript MCP (Model Context Protocol) server that gives Claude Code semantic memory over project documentation via the Goodmem API. It allows Claude to store, search, and retrieve project knowledge across conversations — architectural decisions, feature docs, change logs, and implementation details persist and are searchable by natural language.
+A Claude Code plugin that gives Claude persistent semantic memory over project documentation via the Goodmem API. It allows Claude to store, search, and retrieve project knowledge across conversations — architectural decisions, feature docs, change logs, and implementation details persist and are searchable by natural language.
 
 ## Why It Exists
 
-Claude Code has no memory between sessions. Every new conversation starts from scratch. This MCP bridges that gap by connecting Claude to Goodmem, a vector-based memory system. Before implementing a feature or fixing a bug, Claude can search for prior context — what was built, why, and how — avoiding repeated mistakes and maintaining consistency.
+Claude Code has no memory between sessions. Every new conversation starts from scratch. This plugin bridges that gap by connecting Claude to Goodmem, a vector-based memory system. Before implementing a feature or fixing a bug, Claude can search for prior context — what was built, why, and how — avoiding repeated mistakes and maintaining consistency.
 
 ## Architecture
 
@@ -25,9 +25,10 @@ src/
 ├── config.ts             # Env var config (API key, URL, project name, space ID)
 ├── goodmem-client.ts     # Typed HTTP client for Goodmem REST API
 └── tools/
-    ├── setup.ts          # setup_space, health_check
+    ├── setup.ts          # setup_space, register_llm, health_check
     ├── ingest.ts         # ingest_document, ingest_directory
     ├── search.ts         # search_memory (primary retrieval)
+    ├── smart-search.ts   # smart_search (LLM-powered synthesis)
     └── manage.ts         # list_memories, get_memory, get_memory_content,
                           # delete_memory, batch_delete_memories,
                           # list_spaces, delete_space, update_space
@@ -45,10 +46,12 @@ src/
 | Tool | Purpose |
 |------|---------|
 | `setup_space` | Initialize project: find/create embedder + space |
+| `register_llm` | Register an LLM via OpenRouter for smart search |
 | `health_check` | Verify Goodmem server is reachable |
 | `ingest_document` | Ingest a single markdown file into memory |
 | `ingest_directory` | Bulk ingest all matching files from a directory |
 | `search_memory` | Semantic search across project memories |
+| `smart_search` | LLM-powered search with synthesized answers |
 | `list_memories` | List all ingested documents in the project space |
 | `get_memory` | Get full details of a memory by ID |
 | `get_memory_content` | Download the original content of a memory |

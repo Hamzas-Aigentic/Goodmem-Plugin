@@ -3,8 +3,8 @@
     "command": "node",
     "args": ["build/index.js"],
     "env": {
-      "GOODMEM_API_KEY": "",
-      "GOODMEM_API_URL": "https://localhost:8080"
+      "GOODMEM_API_KEY": "gm_your-api-key",
+      "GOODMEM_API_URL": "https://your-goodmem-server.example.com"
     }
   }
 }

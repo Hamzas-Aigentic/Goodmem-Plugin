@@ -58,24 +58,39 @@ For full setup details, see the [Goodmem Quick Start](https://goodmem.ai/quick-s
 
 ### 1. Add the plugin to Claude Code
 
+**If Goodmem is installed locally** (default `https://localhost:8080`):
+
 ```bash
 claude mcp add goodmem \
-  -e GOODMEM_API_KEY=your-api-key \
-  -e GOODMEM_API_URL=https://localhost:8080 \
+  -e GOODMEM_API_KEY=gm_your-api-key \
   -- npx -y goodmem-mcp
 ```
 
-Or clone and run locally:
+**If Goodmem is hosted on Railway, Fly.io, or another server:**
+
+```bash
+claude mcp add goodmem \
+  -e GOODMEM_API_KEY=gm_your-api-key \
+  -e GOODMEM_API_URL=https://your-goodmem-server.example.com \
+  -- npx -y goodmem-mcp
+```
+
+> `GOODMEM_API_KEY` is the Root API Key from your Goodmem install (`gm_xxx...`).
+> `GOODMEM_API_URL` only needs to be set if Goodmem is not running on localhost.
+
+<details>
+<summary>Or install from source</summary>
 
 ```bash
 git clone https://github.com/Hamzas-Aigentic/Goodmem-Plugin.git
 cd Goodmem-Plugin
 npm install && npm run build
 claude mcp add goodmem \
-  -e GOODMEM_API_KEY=your-api-key \
-  -e GOODMEM_API_URL=https://localhost:8080 \
+  -e GOODMEM_API_KEY=gm_your-api-key \
   -- node build/index.js
 ```
+
+</details>
 
 ### 2. Initialize your project space
 
@@ -84,6 +99,8 @@ In Claude Code, run:
 ```
 /setup
 ```
+
+This creates a memory space for your project with an OpenAI embedder. Requires `OPENAI_API_KEY` to be set on first run (for embedding generation).
 
 ### 3. Start using memory
 

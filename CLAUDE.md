@@ -1,6 +1,6 @@
-# Goodmem MCP Server
+# Goodmem Claude Plugin
 
-TypeScript MCP server that gives Claude Code semantic memory over project documentation via the Goodmem API.
+Claude Code plugin that gives Claude persistent semantic memory over project documentation via the Goodmem API.
 
 ## Project Structure
 
@@ -9,8 +9,9 @@ TypeScript MCP server that gives Claude Code semantic memory over project docume
 - `src/goodmem-client.ts` — Typed HTTP client for Goodmem REST API
 - `src/tools/ingest.ts` — ingest_document, ingest_directory
 - `src/tools/search.ts` — search_memory (primary retrieval tool)
-- `src/tools/manage.ts` — list_memories, delete_memory
-- `src/tools/setup.ts` — setup_space, health_check
+- `src/tools/smart-search.ts` — smart_search (LLM-powered synthesis)
+- `src/tools/manage.ts` — list_memories, get_memory, get_memory_content, delete_memory, batch_delete_memories, list_spaces, delete_space, update_space
+- `src/tools/setup.ts` — setup_space, register_llm, health_check
 
 ## Build & Run
 
