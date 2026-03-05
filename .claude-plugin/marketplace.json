@@ -7,7 +7,7 @@
     {
       "name": "goodmem",
       "description": "Semantic memory for Claude Code projects. Store, search, and retrieve project knowledge across conversations.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./.",
       "author": {
         "name": "Hamza Saraswat"
