@@ -1,7 +1,6 @@
 ---
 name: ingest-docs
 description: Ingest project documentation into Goodmem memory for semantic search and retrieval
-disable-model-invocation: true
 ---
 
 Ingest markdown documentation files into the project's Goodmem memory space.

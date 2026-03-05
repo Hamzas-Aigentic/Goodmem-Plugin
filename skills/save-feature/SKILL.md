@@ -1,7 +1,6 @@
 ---
 name: save-feature
 description: Save a summary of completed work to Goodmem memory for future reference
-disable-model-invocation: true
 ---
 
 Create a feature document summarizing recently completed work and store it in Goodmem memory.
