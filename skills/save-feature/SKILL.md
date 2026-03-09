@@ -1,5 +1,5 @@
 ---
-name: save-feature
+name: goodmem:save-feature
 description: Save a summary of completed work to Goodmem memory for future reference
 ---
 

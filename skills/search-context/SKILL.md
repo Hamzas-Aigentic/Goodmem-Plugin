@@ -1,5 +1,5 @@
 ---
-name: search-context
+name: goodmem:search-context
 description: Search project memory for relevant context about features, decisions, and implementation details
 ---
 

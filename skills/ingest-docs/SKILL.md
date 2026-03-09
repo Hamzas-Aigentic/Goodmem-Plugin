@@ -1,5 +1,5 @@
 ---
-name: ingest-docs
+name: goodmem:ingest-docs
 description: Ingest project documentation into Goodmem memory for semantic search and retrieval
 ---
 

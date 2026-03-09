@@ -1,5 +1,5 @@
 ---
-name: search
+name: goodmem:search
 description: Search project memory with a natural language query
 ---
 

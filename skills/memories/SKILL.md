@@ -1,5 +1,5 @@
 ---
-name: memories
+name: goodmem:memories
 description: List all ingested documents in the current space
 ---
 

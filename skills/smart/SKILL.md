@@ -1,5 +1,5 @@
 ---
-name: smart
+name: goodmem:smart
 description: Search project memory and get an LLM-synthesized answer
 ---
 

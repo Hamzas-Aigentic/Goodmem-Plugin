@@ -1,5 +1,5 @@
 ---
-name: spaces
+name: goodmem:spaces
 description: List all memory spaces
 ---
 

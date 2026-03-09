@@ -1,5 +1,5 @@
 ---
-name: setup
+name: goodmem:setup
 description: Initialize a memory space for this project
 ---
 

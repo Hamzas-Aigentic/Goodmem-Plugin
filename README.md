@@ -105,7 +105,7 @@ claude mcp add goodmem \
 In Claude Code, run:
 
 ```
-/setup
+/goodmem:setup
 ```
 
 This creates a memory space for your project with an OpenAI embedder. Requires `OPENAI_API_KEY` to be set on first run (for embedding generation).
@@ -113,9 +113,9 @@ This creates a memory space for your project with an OpenAI embedder. Requires `
 ### 3. Start using memory
 
 ```
-/ingest docs/architecture.md        # Store a doc
-/search how does authentication work # Recall context
-/memories                            # See what's stored
+/goodmem:ingest docs/architecture.md        # Store a doc
+/goodmem:search how does authentication work # Recall context
+/goodmem:memories                            # See what's stored
 ```
 
 ## Configuration
@@ -186,13 +186,13 @@ Direct shortcuts that map to a single MCP tool:
 
 | Command | What it does | Example |
 |---------|--------------|---------|
-| `/setup [name]` | Create a memory space for this project | `/setup` or `/setup my-project` |
-| `/search <query>` | Semantic search over project memory | `/search how does auth work` |
-| `/smart <query>` | LLM-synthesized answer from memory | `/smart what patterns does the API use` |
-| `/ingest <path>` | Ingest a single file | `/ingest docs/auth.md` |
-| `/recall <id>` | Retrieve the full content of a memory | `/recall abc-123` |
-| `/memories` | List all ingested documents | `/memories` |
-| `/spaces` | List all memory spaces | `/spaces` |
+| `/goodmem:setup [name]` | Create a memory space for this project | `/goodmem:setup` or `/goodmem:setup my-project` |
+| `/goodmem:search <query>` | Semantic search over project memory | `/goodmem:search how does auth work` |
+| `/goodmem:smart <query>` | LLM-synthesized answer from memory | `/goodmem:smart what patterns does the API use` |
+| `/goodmem:ingest <path>` | Ingest a single file | `/goodmem:ingest docs/auth.md` |
+| `/goodmem:recall <id>` | Retrieve the full content of a memory | `/goodmem:recall abc-123` |
+| `/goodmem:memories` | List all ingested documents | `/goodmem:memories` |
+| `/goodmem:spaces` | List all memory spaces | `/goodmem:spaces` |
 
 ### Workflow Commands
 
@@ -200,15 +200,15 @@ Multi-step skills that combine several tools:
 
 | Command | What it does |
 |---------|--------------|
-| `/ingest-docs [path]` | Set up space + bulk ingest all markdown from a directory (default: `./docs`) |
-| `/save-feature [name]` | Write a feature summary doc to `docs/features/` and ingest it into memory |
-| `/search-context <query>` | Search memory, synthesize an answer with source citations, and suggest follow-ups |
+| `/goodmem:ingest-docs [path]` | Set up space + bulk ingest all markdown from a directory (default: `./docs`) |
+| `/goodmem:save-feature [name]` | Write a feature summary doc to `docs/features/` and ingest it into memory |
+| `/goodmem:search-context <query>` | Search memory, synthesize an answer with source citations, and suggest follow-ups |
 
 ## Recommended Workflow
 
-1. **First time in a project** — Run `/setup` to create the memory space, then `/ingest-docs` to bulk-load existing docs
-2. **Before starting work** — Run `/search` (or `/search-context`) to pull in relevant prior context
-3. **After completing work** — Run `/save-feature` to document what was built and why, so future sessions can recall it
+1. **First time in a project** — Run `/goodmem:setup` to create the memory space, then `/goodmem:ingest-docs` to bulk-load existing docs
+2. **Before starting work** — Run `/goodmem:search` (or `/goodmem:search-context`) to pull in relevant prior context
+3. **After completing work** — Run `/goodmem:save-feature` to document what was built and why, so future sessions can recall it
 
 ## Development
 

@@ -1,5 +1,5 @@
 ---
-name: ingest
+name: goodmem:ingest
 description: Ingest a single file into project memory
 ---
 

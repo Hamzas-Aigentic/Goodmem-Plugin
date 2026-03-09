@@ -1,5 +1,5 @@
 ---
-name: recall
+name: goodmem:recall
 description: Get the full content of a memory by ID
 ---
 
