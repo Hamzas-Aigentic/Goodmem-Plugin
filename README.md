@@ -6,6 +6,22 @@
 
 Give Claude Code persistent memory across conversations. Store, search, and retrieve project knowledge — architectural decisions, feature docs, implementation details — via semantic search powered by [Goodmem](https://goodmem.ai/).
 
+## How It Works
+
+```
+  Ingest              Embed & Store            Search
+┌─────────┐        ┌───────────────┐        ┌──────────┐
+│ Markdown │──────▶ │ Chunks → Vectors │──────▶ │ Semantic │
+│  files   │        │  (Goodmem API)  │        │  recall  │
+└─────────┘        └───────────────┘        └──────────┘
+```
+
+1. **Ingest** — Feed markdown docs (architecture notes, feature summaries, changelogs) into Goodmem
+2. **Embed** — Goodmem chunks the text and generates vector embeddings automatically
+3. **Search** — Query your project's memory with natural language; get back relevant context ranked by similarity
+
+Claude uses this loop every session: search before working, ingest after completing work.
+
 ## What is Goodmem?
 
 [Goodmem](https://goodmem.ai/) is agentic AI memory infrastructure. It gives AI tools persistent memory via vector-based semantic search — documents are chunked, embedded, and stored so they can be retrieved by natural language queries. Claude Code has no memory between sessions; Goodmem bridges that gap.
@@ -14,20 +30,10 @@ Give Claude Code persistent memory across conversations. Store, search, and retr
 - **Documentation:** [docs.goodmem.ai](https://docs.goodmem.ai/docs/)
 - **Quick Start:** [goodmem.ai/quick-start](https://goodmem.ai/quick-start)
 
-## Features
-
-- **Semantic search** over project documentation using natural language queries
-- **Automatic chunking and embedding** of ingested documents
-- **Space auto-detection** — automatically finds or creates a space matching your project name
-- **15 MCP tools** for ingesting, searching, and managing project memory
-- **10 slash commands** for quick access to common workflows
-- **LLM-powered smart search** with synthesized answers (via OpenRouter)
-- **Bulk ingestion** of entire documentation directories
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 18+
-- A running Goodmem server (see below)
+- A running Goodmem server (see [Setting Up Goodmem](#setting-up-goodmem))
 - A Goodmem API key
 
 ## Setting Up Goodmem
@@ -51,6 +57,8 @@ curl -s https://get.goodmem.ai/flyio | bash
 ```
 
 > **Save your API key.** The installer outputs a Root API Key (`gm_xxx...`) — this is your `GOODMEM_API_KEY` for the plugin. It only appears once.
+
+Once the server is running, the **web console** is available at `https://localhost:8080/console/` — use it to manage spaces, embedders, LLMs, upload documents, and run searches from your browser.
 
 For full setup details, see the [Goodmem Quick Start](https://goodmem.ai/quick-start) and [documentation](https://docs.goodmem.ai/docs/).
 
@@ -105,9 +113,9 @@ This creates a memory space for your project with an OpenAI embedder. Requires `
 ### 3. Start using memory
 
 ```
-/search how does authentication work
-/ingest docs/architecture.md
-/memories
+/ingest docs/architecture.md        # Store a doc
+/search how does authentication work # Recall context
+/memories                            # See what's stored
 ```
 
 ## Configuration
@@ -124,6 +132,8 @@ This creates a memory space for your project with an OpenAI embedder. Requires `
 
 ## Tools Reference
 
+The plugin exposes 15 MCP tools organized into four categories.
+
 ### Setup
 
 | Tool | Description |
@@ -136,58 +146,69 @@ This creates a memory space for your project with an OpenAI embedder. Requires `
 
 | Tool | Description |
 |------|-------------|
-| `ingest_document` | Ingest a single file into project memory |
-| `ingest_directory` | Bulk ingest all matching files from a directory |
+| `ingest_document` | Ingest a single markdown file into project memory |
+| `ingest_directory` | Bulk ingest all matching files from a directory (default: `**/*.md`) |
 
 ### Search
 
 | Tool | Description |
 |------|-------------|
 | `search_memory` | Semantic search — returns ranked chunks with relevance scores |
-| `smart_search` | LLM-powered search — returns a synthesized natural language answer |
+| `smart_search` | LLM-powered search — returns a synthesized natural language answer (requires `OPENROUTER_API_KEY`) |
 
 ### Manage
 
 | Tool | Description |
 |------|-------------|
 | `list_memories` | List all ingested documents in the current space |
-| `get_memory` | Get full details and metadata of a memory |
+| `get_memory` | Get full details and processing status of a memory |
 | `get_memory_content` | Download the original text content of a memory |
 | `delete_memory` | Delete a single memory by ID |
 | `batch_delete_memories` | Delete multiple memories at once |
 | `list_spaces` | List all accessible spaces |
 | `delete_space` | Permanently delete a space and all its memories |
-| `update_space` | Update a space name or permissions |
+| `update_space` | Update a space's name or public-read permissions |
+
+## MCP Prompts
+
+The plugin also registers 2 MCP prompts — reusable prompt templates that Claude can invoke:
+
+| Prompt | Description |
+|--------|-------------|
+| `ingest_project_docs` | Ingest all markdown from a docs directory (default: `./docs`). Runs `setup_space` then `ingest_directory`. |
+| `feature_context` | Search memory for all context about a specific feature — architecture, implementation details, history. |
 
 ## Slash Commands
 
-Simple shortcuts that map directly to MCP tools:
+### Simple Commands
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/setup` | Initialize a memory space | `/setup` or `/setup my-project` |
-| `/search <query>` | Semantic search | `/search how does auth work` |
-| `/smart <query>` | LLM-synthesized search | `/smart what patterns does the API use` |
+Direct shortcuts that map to a single MCP tool:
+
+| Command | What it does | Example |
+|---------|--------------|---------|
+| `/setup [name]` | Create a memory space for this project | `/setup` or `/setup my-project` |
+| `/search <query>` | Semantic search over project memory | `/search how does auth work` |
+| `/smart <query>` | LLM-synthesized answer from memory | `/smart what patterns does the API use` |
 | `/ingest <path>` | Ingest a single file | `/ingest docs/auth.md` |
-| `/recall <id>` | Get full content of a memory | `/recall abc-123` |
+| `/recall <id>` | Retrieve the full content of a memory | `/recall abc-123` |
 | `/memories` | List all ingested documents | `/memories` |
-| `/spaces` | List all spaces | `/spaces` |
+| `/spaces` | List all memory spaces | `/spaces` |
 
 ### Workflow Commands
 
-Multi-step skills for common workflows:
+Multi-step skills that combine several tools:
 
-| Command | Description |
-|---------|-------------|
-| `/ingest-docs [path]` | Set up space and bulk ingest all markdown from a directory |
-| `/save-feature [name]` | Write a feature summary doc and ingest it into memory |
-| `/search-context <query>` | Search with context synthesis and source citations |
+| Command | What it does |
+|---------|--------------|
+| `/ingest-docs [path]` | Set up space + bulk ingest all markdown from a directory (default: `./docs`) |
+| `/save-feature [name]` | Write a feature summary doc to `docs/features/` and ingest it into memory |
+| `/search-context <query>` | Search memory, synthesize an answer with source citations, and suggest follow-ups |
 
 ## Recommended Workflow
 
-1. **First use** — Run `/setup` to initialize the project space
-2. **Before any work** — Run `/search` to retrieve relevant prior context
-3. **After completing work** — Run `/save-feature` to document what was built and why
+1. **First time in a project** — Run `/setup` to create the memory space, then `/ingest-docs` to bulk-load existing docs
+2. **Before starting work** — Run `/search` (or `/search-context`) to pull in relevant prior context
+3. **After completing work** — Run `/save-feature` to document what was built and why, so future sessions can recall it
 
 ## Development
 
@@ -211,7 +232,8 @@ src/
     ├── search.ts         # search_memory
     ├── manage.ts         # list/get/delete memories and spaces
     └── smart-search.ts   # smart_search with LLM synthesis
-skills/                   # Claude Code slash commands
+skills/                   # Claude Code slash commands (SKILL.md files)
+.claude-plugin/           # Plugin manifest, marketplace config, MCP server config
 docs/                     # Architecture documentation
 ```
 
