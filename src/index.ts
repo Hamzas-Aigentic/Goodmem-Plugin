@@ -29,7 +29,7 @@ async function main() {
   });
 
   const server = new McpServer(
-    { name: "goodmem-mcp", version: "1.0.1" },
+    { name: "goodmem-mcp", version: "1.0.2" },
     {
       instructions: `You have access to Goodmem, a semantic memory system for this project's documentation and feature history.
 
