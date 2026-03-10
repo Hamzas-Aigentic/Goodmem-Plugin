@@ -5,8 +5,8 @@ describe("detectContentType", () => {
   const cases: [string, string][] = [
     [".md", "text/markdown"],
     [".txt", "text/plain"],
-    [".ts", "text/typescript"],
-    [".js", "text/javascript"],
+    [".ts", "text/x-typescript"],
+    [".js", "text/x-javascript"],
     [".py", "text/x-python"],
     [".json", "application/json"],
     [".yaml", "text/yaml"],

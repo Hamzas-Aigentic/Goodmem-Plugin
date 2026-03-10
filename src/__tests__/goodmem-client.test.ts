@@ -122,12 +122,13 @@ describe("GoodmemClient", () => {
 
   describe("ocrDocument", () => {
     it("sends POST to /v1/ocr:document with correct body", async () => {
-      const ocrResult = { text: "extracted text", pages: 3 };
+      const ocrResult = { detectedFormat: "PDF", pageCount: 3, pages: [{ markdown: "extracted text" }] };
       fetchMock.mockResolvedValue(mockFetchResponse(ocrResult));
 
       const result = await client.ocrDocument({
         content: "base64data",
-        contentType: "application/pdf",
+        format: "PDF",
+        includeMarkdown: true,
       });
 
       const [url, opts] = fetchMock.mock.calls[0];
@@ -135,9 +136,9 @@ describe("GoodmemClient", () => {
       expect(opts.method).toBe("POST");
       const body = JSON.parse(opts.body);
       expect(body.content).toBe("base64data");
-      expect(body.contentType).toBe("application/pdf");
-      expect(result.text).toBe("extracted text");
-      expect(result.pages).toBe(3);
+      expect(body.format).toBe("PDF");
+      expect(body.includeMarkdown).toBe(true);
+      expect(result.pageCount).toBe(3);
     });
   });
 
@@ -155,7 +156,7 @@ describe("GoodmemClient", () => {
       expect(url).toBe("https://localhost:8080/v1/memories:batchGet");
       expect(opts.method).toBe("POST");
       const body = JSON.parse(opts.body);
-      expect(body.memoryIds).toEqual(["m-1", "m-2"]);
+      expect(body.requests).toEqual([{ memoryId: "m-1" }, { memoryId: "m-2" }]);
       expect(result).toEqual(memories);
     });
   });

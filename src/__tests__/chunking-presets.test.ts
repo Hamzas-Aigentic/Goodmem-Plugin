@@ -8,45 +8,42 @@ describe("CHUNKING_PRESETS", () => {
   it("has short-docs preset with correct values", () => {
     const preset = CHUNKING_PRESETS["short-docs"];
     expect(preset).toBeDefined();
-    expect(preset.name).toBe("short-docs");
-    expect(preset.config.recursive?.chunkSize).toBe(500);
-    expect(preset.config.recursive?.chunkOverlap).toBe(100);
+    expect(preset.recursive?.chunkSize).toBe(500);
+    expect(preset.recursive?.chunkOverlap).toBe(100);
   });
 
   it("has long-docs preset with correct values", () => {
     const preset = CHUNKING_PRESETS["long-docs"];
     expect(preset).toBeDefined();
-    expect(preset.name).toBe("long-docs");
-    expect(preset.config.recursive?.chunkSize).toBe(2000);
-    expect(preset.config.recursive?.chunkOverlap).toBe(400);
+    expect(preset.recursive?.chunkSize).toBe(1000);
+    expect(preset.recursive?.chunkOverlap).toBe(200);
   });
 
   it("has mixed preset with correct values", () => {
     const preset = CHUNKING_PRESETS["mixed"];
     expect(preset).toBeDefined();
-    expect(preset.name).toBe("mixed");
-    expect(preset.config.recursive?.chunkSize).toBe(1000);
-    expect(preset.config.recursive?.chunkOverlap).toBe(200);
+    expect(preset.recursive?.chunkSize).toBe(800);
+    expect(preset.recursive?.chunkOverlap).toBe(150);
   });
 
   it("has code-heavy preset with correct values", () => {
     const preset = CHUNKING_PRESETS["code-heavy"];
     expect(preset).toBeDefined();
-    expect(preset.name).toBe("code-heavy");
-    expect(preset.config.recursive?.chunkSize).toBe(1500);
-    expect(preset.config.recursive?.chunkOverlap).toBe(150);
+    expect(preset.recursive?.chunkSize).toBe(600);
+    expect(preset.recursive?.chunkOverlap).toBe(120);
+    expect(preset.recursive?.separators).toEqual(["\n\n", "\n", ". ", " "]);
   });
 });
 
 describe("resolveChunkingConfig", () => {
   it("returns the mixed preset for 'mixed'", () => {
     const config = resolveChunkingConfig("mixed");
-    expect(config).toEqual(CHUNKING_PRESETS["mixed"].config);
+    expect(config).toEqual(CHUNKING_PRESETS["mixed"]);
   });
 
   it("returns the mixed preset when undefined (default)", () => {
     const config = resolveChunkingConfig(undefined);
-    expect(config).toEqual(CHUNKING_PRESETS["mixed"].config);
+    expect(config).toEqual(CHUNKING_PRESETS["mixed"]);
   });
 
   it("returns custom config when provided", () => {
@@ -57,6 +54,6 @@ describe("resolveChunkingConfig", () => {
 
   it("returns short-docs preset", () => {
     const config = resolveChunkingConfig("short-docs");
-    expect(config).toEqual(CHUNKING_PRESETS["short-docs"].config);
+    expect(config).toEqual(CHUNKING_PRESETS["short-docs"]);
   });
 });
