@@ -9,9 +9,9 @@ Bulk ingest documentation files from a directory into project memory.
 
 1. **Determine the directory** from $ARGUMENTS. Default to `./docs` if not specified.
 
-2. **Discover files** by calling `ingest_directory` with the directory path and an appropriate glob pattern. If the user specified a file type, adjust the pattern accordingly.
+2. **Discover files** by listing the directory contents to identify documentation files (markdown, text, code, config files, etc.). If the user specified a file type, filter accordingly.
 
-3. **For small batches (≤20 files)**, show a preview table before ingesting:
+3. **For small batches (≤20 files)**, show a preview table with auto-detected metadata:
    ```
    | File | Type | Tags | Module | Status |
    |------|------|------|--------|--------|
@@ -23,6 +23,6 @@ Bulk ingest documentation files from a directory into project memory.
 4. **For large batches (>20 files)**, show a summary:
    "Found 47 files. I'll auto-detect metadata for each. Proceed with auto-detection, or would you like to review a sample first?"
 
-5. **Execute ingestion** by calling `ingest_document` for each file with auto-extracted metadata (following the same metadata extraction rules as /goodmem:ingest).
+5. **Execute ingestion** by calling `ingest_directory` with the directory path and an appropriate glob pattern to ingest all matching files in a single call.
 
 6. **Report results**: number of files ingested, any failures, and total memory count.
