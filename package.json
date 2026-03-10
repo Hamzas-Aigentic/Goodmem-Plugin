@@ -1,6 +1,6 @@
 {
   "name": "goodmem-mcp",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "MCP server for Goodmem - semantic memory for AI coding agents",
   "type": "module",
   "bin": {
@@ -8,7 +8,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
@@ -16,7 +18,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18"
   },
   "files": [
     "build"

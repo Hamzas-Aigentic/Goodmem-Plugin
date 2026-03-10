@@ -12,12 +12,17 @@ Claude Code plugin that gives Claude persistent semantic memory over project doc
 - `src/tools/smart-search.ts` — smart_search (LLM-powered synthesis)
 - `src/tools/manage.ts` — list_memories, get_memory, get_memory_content, delete_memory, batch_delete_memories, list_spaces, delete_space, update_space
 - `src/tools/setup.ts` — setup_space, register_llm, health_check
+- `src/tools/status.ts` — status tool showing current config
+- `src/mime.ts` — MIME type detection from file extensions
+- `src/chunking-presets.ts` — Named chunking configurations (short-docs, long-docs, mixed, code-heavy)
 
 ## Build & Run
 
 ```bash
 npm run build        # Compiles to build/
 npm start            # Runs the server (stdio transport)
+npm test             # Run unit tests
+npm run test:watch   # Run tests in watch mode
 ```
 
 ## Key Conventions
@@ -27,3 +32,6 @@ npm start            # Runs the server (stdio transport)
 - Tool inputs use Zod schemas via `server.tool(name, description, schema, handler)`.
 - The Goodmem REST API uses camelCase JSON fields.
 - Space auto-detection: resolves from GOODMEM_SPACE_ID env var, or finds/creates a space matching the cwd basename.
+- Config persistence: `.goodmem.json` in project root stores spaceId, rerankerId, llmId, embedderId, chunkingPreset
+- New env vars: `COHERE_API_KEY` for reranker registration
+- Resolution chain for IDs: env var > .goodmem.json > runtime state

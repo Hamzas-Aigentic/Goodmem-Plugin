@@ -176,6 +176,33 @@ export interface BatchDeleteResult {
   }>;
 }
 
+export interface CreateRerankerParams {
+  displayName: string;
+  providerType: string;
+  endpointUrl: string;
+  modelIdentifier: string;
+  apiPath?: string;
+  credentials?: EndpointCredentials;
+}
+
+export interface Reranker {
+  rerankerId: string;
+  displayName: string;
+  providerType: string;
+  modelIdentifier: string;
+  endpointUrl: string;
+}
+
+export interface OcrDocumentParams {
+  content: string;
+  contentType: string;
+}
+
+export interface OcrResult {
+  text: string;
+  pages?: number;
+}
+
 export interface CreateLLMParams {
   displayName: string;
   providerType: string;
@@ -546,5 +573,68 @@ export class GoodmemClient {
 
   async deleteLLM(id: string): Promise<void> {
     await this.request<void>("DELETE", `/v1/llms/${id}`);
+  }
+
+  async getLLM(id: string): Promise<LLM> {
+    return this.request<LLM>("GET", `/v1/llms/${id}`);
+  }
+
+  // ── Embedder by ID ──────────────────────────────────────────────────────
+
+  async getEmbedder(id: string): Promise<Embedder> {
+    return this.request<Embedder>("GET", `/v1/embedders/${id}`);
+  }
+
+  // ── Rerankers ──────────────────────────────────────────────────────────
+
+  async createReranker(params: CreateRerankerParams): Promise<Reranker> {
+    const body: Record<string, unknown> = {
+      displayName: params.displayName,
+      providerType: params.providerType,
+      endpointUrl: params.endpointUrl,
+      modelIdentifier: params.modelIdentifier,
+    };
+    if (params.apiPath !== undefined) body.apiPath = params.apiPath;
+    if (params.credentials !== undefined) body.credentials = params.credentials;
+
+    return this.request<Reranker>("POST", "/v1/rerankers", body);
+  }
+
+  async listRerankers(): Promise<Reranker[]> {
+    const res = await this.request<{ rerankers: Reranker[] }>(
+      "GET",
+      "/v1/rerankers"
+    );
+    return res.rerankers ?? [];
+  }
+
+  async getReranker(id: string): Promise<Reranker> {
+    return this.request<Reranker>("GET", `/v1/rerankers/${id}`);
+  }
+
+  async deleteReranker(id: string): Promise<void> {
+    await this.request<void>("DELETE", `/v1/rerankers/${id}`);
+  }
+
+  // ── OCR ────────────────────────────────────────────────────────────────
+
+  async ocrDocument(params: OcrDocumentParams): Promise<OcrResult> {
+    return this.request<OcrResult>("POST", "/v1/ocr:document", {
+      content: params.content,
+      contentType: params.contentType,
+    });
+  }
+
+  // ── Batch Get Memories ─────────────────────────────────────────────────
+
+  async batchGetMemories(
+    memoryIds: string[]
+  ): Promise<Memory[]> {
+    const res = await this.request<{ memories: Memory[] }>(
+      "POST",
+      "/v1/memories:batchGet",
+      { memoryIds }
+    );
+    return res.memories ?? [];
   }
 }
