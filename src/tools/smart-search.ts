@@ -73,7 +73,7 @@ export function registerSmartSearchTools(
         llm_id: resolvedLlmId,
         relevance_threshold: 0.5,
         llm_temp: 0.3,
-        max_results: 10,
+        max_results: limit,
       };
       if (resolvedRerankerId) {
         postProcessorConfig.reranker_id = resolvedRerankerId;

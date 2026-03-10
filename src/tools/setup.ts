@@ -37,13 +37,17 @@ export function registerSetupTools(
         .number()
         .optional()
         .describe("Custom chunk overlap (overrides preset)"),
+      separators: z
+        .array(z.string())
+        .optional()
+        .describe("Custom chunk separators (overrides preset)"),
       autoRegisterReranker: z
         .boolean()
         .optional()
         .default(true)
         .describe("Auto-register Cohere reranker if COHERE_API_KEY is available"),
     },
-    async ({ projectName, chunkingPreset, chunkSize, chunkOverlap, autoRegisterReranker }) => {
+    async ({ projectName, chunkingPreset, chunkSize, chunkOverlap, separators, autoRegisterReranker }) => {
       const name = projectName ?? getConfig().projectName;
 
       // Check for existing space with matching name
@@ -51,6 +55,16 @@ export function registerSetupTools(
       const existing = spaces.find((s) => s.name === name);
       if (existing) {
         setResolvedSpaceId(existing.spaceId);
+
+        // Restore all runtime IDs from persisted config
+        const persisted = loadPersistedConfig() ?? {};
+        if (persisted.rerankerId) setResolvedRerankerId(persisted.rerankerId);
+        if (persisted.llmId) setResolvedLlmId(persisted.llmId);
+        if (persisted.embedderId) setResolvedEmbedderId(persisted.embedderId);
+
+        // Persist space ID (in case .goodmem.json doesn't exist yet)
+        savePersistedConfig({ ...persisted, spaceId: existing.spaceId });
+
         return {
           content: [
             {
@@ -102,6 +116,11 @@ export function registerSetupTools(
         ? { recursive: { chunkSize: chunkSize ?? 800, chunkOverlap: chunkOverlap ?? 150 } }
         : undefined;
       const chunkingConfig = resolveChunkingConfig(chunkingPreset, customChunking);
+
+      // Merge custom separators if provided
+      if (separators && chunkingConfig.recursive) {
+        chunkingConfig.recursive.separators = separators;
+      }
 
       // Create space with the embedder
       const space = await client.createSpace({

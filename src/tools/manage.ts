@@ -267,4 +267,25 @@ export function registerManageTools(
       };
     }
   );
+
+  // ── Delete Reranker ───────────────────────────────────────────────────
+
+  server.tool(
+    "delete_reranker",
+    "Delete a registered reranker.",
+    {
+      rerankerId: z.string().describe("The reranker ID to delete"),
+    },
+    async ({ rerankerId }) => {
+      await client.deleteReranker(rerankerId);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Successfully deleted reranker ${rerankerId}`,
+          },
+        ],
+      };
+    }
+  );
 }

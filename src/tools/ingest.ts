@@ -234,39 +234,102 @@ export function registerIngestTools(
         };
       }
 
-      // Dedup check: get existing memories to find duplicates
-      let existingMemories: Awaited<ReturnType<typeof client.listMemories>> = [];
-      if (overwrite) {
-        existingMemories = await client.listMemories(spaceId);
+      // Dedup check: always get existing memories to find duplicates
+      const existingMemories = await client.listMemories(spaceId);
+
+      // Build dedup map and determine which files to skip/delete
+      const toDelete: string[] = [];
+      const skippedFiles: string[] = [];
+      const filesToIngest: string[] = [];
+
+      for (const filePath of files) {
+        const existing = existingMemories.find((m) => {
+          const meta = typeof m.metadata === "string"
+            ? (() => { try { return JSON.parse(m.metadata); } catch { return {}; } })()
+            : m.metadata ?? {};
+          return meta.filePath === filePath;
+        });
+        if (existing) {
+          if (overwrite) {
+            toDelete.push(existing.memoryId);
+            filesToIngest.push(filePath);
+          } else {
+            skippedFiles.push(filePath);
+          }
+        } else {
+          filesToIngest.push(filePath);
+        }
       }
 
       // Delete existing memories for files we're about to overwrite
-      if (overwrite && existingMemories.length > 0) {
-        const toDelete: string[] = [];
-        for (const filePath of files) {
-          const existing = existingMemories.find((m) => {
-            const meta = typeof m.metadata === "string"
-              ? (() => { try { return JSON.parse(m.metadata); } catch { return {}; } })()
-              : m.metadata ?? {};
-            return meta.filePath === filePath;
-          });
-          if (existing) {
-            toDelete.push(existing.memoryId);
-          }
-        }
-        if (toDelete.length > 0) {
-          await client.batchDeleteMemories(
-            toDelete.map((memoryId) => ({ memoryId }))
-          );
+      if (toDelete.length > 0) {
+        await client.batchDeleteMemories(
+          toDelete.map((memoryId) => ({ memoryId }))
+        );
+      }
+
+      // Separate text files from binary files (PDFs/images need OCR)
+      const textFiles: string[] = [];
+      const ocrFiles: string[] = [];
+      for (const filePath of filesToIngest) {
+        const ct = detectContentType(filePath);
+        if (isPdf(ct) || isImage(ct)) {
+          ocrFiles.push(filePath);
+        } else {
+          textFiles.push(filePath);
         }
       }
 
-      // Batch ingest in groups of 20
-      const BATCH_SIZE = 20;
-      const results: Array<{ fileName: string; id?: string; error?: string }> = [];
+      const results: Array<{ fileName: string; id?: string; error?: string; skipped?: boolean }> = [];
 
-      for (let i = 0; i < files.length; i += BATCH_SIZE) {
-        const batch = files.slice(i, i + BATCH_SIZE);
+      // Add skipped files to results
+      for (const filePath of skippedFiles) {
+        results.push({
+          fileName: path.basename(filePath),
+          skipped: true,
+        });
+      }
+
+      // Process OCR files individually (PDFs and images)
+      for (const filePath of ocrFiles) {
+        try {
+          const ct = detectContentType(filePath);
+          const fileBuffer = await fs.readFile(filePath);
+          const base64 = fileBuffer.toString("base64");
+          const ocrResult = await client.ocrDocument({
+            content: base64,
+            format: isPdf(ct) ? "PDF" : "AUTO",
+            includeMarkdown: true,
+          });
+          const pages = ocrResult.pages ?? [];
+          const originalContent = pages.map((p: { markdown?: string }) => p.markdown ?? "").join("\n\n---\n\n");
+          const fileName = path.basename(filePath);
+          const memory = await client.createMemory({
+            spaceId,
+            originalContent,
+            contentType: "text/markdown",
+            metadata: {
+              ...(metadata ?? {}),
+              filePath,
+              fileName,
+              ingestedAt: new Date().toISOString(),
+              originalFormat: isPdf(ct) ? "pdf" : "image",
+            },
+          });
+          results.push({ fileName, id: memory.memoryId });
+        } catch {
+          results.push({
+            fileName: path.basename(filePath),
+            error: "OCR/ingest failed",
+          });
+        }
+      }
+
+      // Batch ingest text files in groups of 20
+      const BATCH_SIZE = 20;
+
+      for (let i = 0; i < textFiles.length; i += BATCH_SIZE) {
+        const batch = textFiles.slice(i, i + BATCH_SIZE);
         const batchParams = await Promise.all(
           batch.map(async (filePath) => {
             const fileContent = await fs.readFile(filePath, "utf-8");
@@ -300,15 +363,18 @@ export function registerIngestTools(
 
       const succeeded = results.filter(r => r.id).length;
       const failed = results.filter(r => r.error).length;
+      const skipped = results.filter(r => r.skipped).length;
 
       const fileList = results
         .map((r) => {
+          if (r.skipped) return `- ${r.fileName} (SKIPPED: already exists)`;
           if (r.id) return `- ${r.fileName} (ID: ${r.id})`;
           return `- ${r.fileName} (FAILED: ${r.error})`;
         })
         .join("\n");
 
       let summary = `Ingested ${succeeded} documents from ${directoryPath}`;
+      if (skipped > 0) summary += ` (${skipped} skipped)`;
       if (failed > 0) summary += ` (${failed} failed)`;
 
       return {
