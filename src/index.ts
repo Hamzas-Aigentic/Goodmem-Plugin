@@ -9,6 +9,7 @@ import { registerSearchTools } from "./tools/search.js";
 import { registerManageTools } from "./tools/manage.js";
 import { registerSetupTools } from "./tools/setup.js";
 import { registerSmartSearchTools } from "./tools/smart-search.js";
+import { registerStatusTools } from "./tools/status.js";
 
 async function main() {
   const config = getConfig();
@@ -52,6 +53,7 @@ CRITICAL: After calling search_memory, ALWAYS synthesize a clear, direct answer 
   registerManageTools(server, client);
   registerSetupTools(server, client);
   registerSmartSearchTools(server, client);
+  registerStatusTools(server, client);
 
   // Register prompts (appear as /mcp__goodmem__<name> commands)
   server.prompt(

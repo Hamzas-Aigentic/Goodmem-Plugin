@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GoodmemClient } from "../goodmem-client.js";
-import { getResolvedSpaceId, getConfig } from "../config.js";
-
-function getSpaceId(): string | null {
-  return getResolvedSpaceId() ?? getConfig().spaceId ?? null;
-}
+import { getEffectiveSpaceId, getEffectiveRerankerId } from "../config.js";
 
 export function registerSearchTools(
   server: McpServer,
@@ -27,9 +23,13 @@ export function registerSearchTools(
         .describe(
           "Optional Goodmem filter expression for metadata filtering"
         ),
+      rerankerId: z
+        .string()
+        .optional()
+        .describe("Reranker ID for improved search quality (auto-detected from config if available)"),
     },
-    async ({ query, limit, filter }) => {
-      const spaceId = getSpaceId();
+    async ({ query, limit, filter, rerankerId }) => {
+      const spaceId = getEffectiveSpaceId();
       if (!spaceId) {
         return {
           content: [
@@ -42,12 +42,27 @@ export function registerSearchTools(
         };
       }
 
-      const response = await client.retrieveMemories({
+      const resolvedRerankerId = rerankerId ?? getEffectiveRerankerId();
+
+      const retrieveParams: Parameters<typeof client.retrieveMemories>[0] = {
         spaceId,
         message: query,
         requestedSize: limit,
         filter,
-      });
+      };
+
+      if (resolvedRerankerId) {
+        retrieveParams.postProcessor = {
+          name: "com.goodmem.retrieval.postprocess.ChatPostProcessorFactory",
+          config: {
+            reranker_id: resolvedRerankerId,
+            relevance_threshold: 0.3,
+            max_results: limit,
+          },
+        };
+      }
+
+      const response = await client.retrieveMemories(retrieveParams);
 
       if (!response.items || response.items.length === 0) {
         return {

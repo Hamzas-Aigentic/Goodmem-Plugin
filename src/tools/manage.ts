@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GoodmemClient } from "../goodmem-client.js";
-import { getConfig, getResolvedSpaceId } from "../config.js";
-
-function getSpaceId(): string | null {
-  return getResolvedSpaceId() ?? getConfig().spaceId ?? null;
-}
+import { getEffectiveSpaceId } from "../config.js";
 
 export function registerManageTools(
   server: McpServer,
@@ -24,7 +20,7 @@ export function registerManageTools(
         .describe("Maximum number of memories to list"),
     },
     async ({ limit }) => {
-      const spaceId = getSpaceId();
+      const spaceId = getEffectiveSpaceId();
       if (!spaceId) {
         return {
           content: [
@@ -245,6 +241,27 @@ export function registerManageTools(
           {
             type: "text" as const,
             text: `Updated space '${space.name}' (ID: ${space.spaceId})`,
+          },
+        ],
+      };
+    }
+  );
+
+  // ── Delete LLM ──────────────────────────────────────────────────────────
+
+  server.tool(
+    "delete_llm",
+    "Delete a registered LLM.",
+    {
+      llmId: z.string().describe("The LLM ID to delete"),
+    },
+    async ({ llmId }) => {
+      await client.deleteLLM(llmId);
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Successfully deleted LLM ${llmId}`,
           },
         ],
       };
