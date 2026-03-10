@@ -18,7 +18,13 @@ Follow these steps:
 
 3. Call `setup_space` to ensure a memory space exists for this project.
 
-4. Call `ingest_document` with the absolute path to the newly created markdown file.
+4. Call `ingest_document` with the absolute path to the newly created markdown file and the following metadata:
+   - `type`: "feature"
+   - `tags`: Extract from the feature description and files modified (e.g., ["auth", "api", "database"])
+   - `module`: Infer from the primary directory or component the feature touches
+   - `date`: Today's date in ISO 8601 format
+   - `status`: "active"
+   - `summary`: A one-line description of what was built
 
 5. Confirm to the user that the feature was saved, including:
    - The file path of the created document.
