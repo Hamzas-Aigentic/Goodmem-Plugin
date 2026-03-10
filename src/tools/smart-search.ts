@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GoodmemClient } from "../goodmem-client.js";
-import { getResolvedSpaceId, getConfig } from "../config.js";
-
-function getSpaceId(): string | null {
-  return getResolvedSpaceId() ?? getConfig().spaceId ?? null;
-}
+import { getEffectiveSpaceId, getEffectiveRerankerId, getEffectiveLlmId } from "../config.js";
 
 export function registerSmartSearchTools(
   server: McpServer,
@@ -33,9 +29,13 @@ export function registerSmartSearchTools(
         .describe(
           "LLM ID to use for synthesis. If not provided, uses the first registered LLM."
         ),
+      rerankerId: z
+        .string()
+        .optional()
+        .describe("Reranker ID for improved search quality (auto-detected from config if available)"),
     },
-    async ({ query, limit, filter, llmId }) => {
-      const spaceId = getSpaceId();
+    async ({ query, limit, filter, llmId, rerankerId }) => {
+      const spaceId = getEffectiveSpaceId();
       if (!spaceId) {
         return {
           content: [
@@ -48,8 +48,11 @@ export function registerSmartSearchTools(
         };
       }
 
+      // Resolve reranker ID
+      const resolvedRerankerId = rerankerId ?? getEffectiveRerankerId();
+
       // Resolve LLM ID
-      let resolvedLlmId = llmId;
+      let resolvedLlmId = llmId ?? getEffectiveLlmId();
       if (!resolvedLlmId) {
         const llms = await client.listLLMs();
         if (llms.length === 0) {
@@ -66,6 +69,16 @@ export function registerSmartSearchTools(
         resolvedLlmId = llms[0].llmId;
       }
 
+      const postProcessorConfig: Record<string, unknown> = {
+        llm_id: resolvedLlmId,
+        relevance_threshold: 0.5,
+        llm_temp: 0.3,
+        max_results: 10,
+      };
+      if (resolvedRerankerId) {
+        postProcessorConfig.reranker_id = resolvedRerankerId;
+      }
+
       const response = await client.retrieveMemories({
         spaceId,
         message: query,
@@ -73,12 +86,7 @@ export function registerSmartSearchTools(
         filter,
         postProcessor: {
           name: "com.goodmem.retrieval.postprocess.ChatPostProcessorFactory",
-          config: {
-            llm_id: resolvedLlmId,
-            relevance_threshold: 0.5,
-            llm_temp: 0.3,
-            max_results: 10,
-          },
+          config: postProcessorConfig,
         },
       });
 
