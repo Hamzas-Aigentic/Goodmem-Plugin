@@ -134,6 +134,11 @@ export interface RetrieveParams {
   fetchMemory?: boolean;
   fetchMemoryContent?: boolean;
   postProcessor?: PostProcessor;
+  spaceKeys?: Array<{
+    spaceId: string;
+    filter?: string;
+    embedderWeights?: Array<{ embedderId: string; weight: number | string }>;
+  }>;
 }
 
 export interface ChunkData {
@@ -191,6 +196,46 @@ export interface LLM {
   providerType: string;
   modelIdentifier: string;
   endpointUrl: string;
+}
+
+export interface Reranker {
+  rerankerId: string;
+  displayName: string;
+  providerType: string;
+  modelIdentifier: string;
+  endpointUrl: string;
+  apiPath?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateRerankerParams {
+  displayName: string;
+  providerType: ProviderType;
+  endpointUrl: string;
+  modelIdentifier: string;
+  apiPath?: string;
+  credentials?: EndpointCredentials;
+}
+
+export interface OcrRequest {
+  content: string; // base64-encoded
+  format?: string; // AUTO, PDF, TIFF, PNG, JPEG, BMP
+  startPage?: number;
+  endPage?: number;
+  includeMarkdown?: boolean;
+  includeRawJson?: boolean;
+}
+
+export interface OcrPageResult {
+  markdown?: string;
+  rawJson?: string;
+}
+
+export interface OcrResponse {
+  detectedFormat?: string;
+  pageCount?: number;
+  pages?: OcrPageResult[];
 }
 
 // ── Client ──────────────────────────────────────────────────────────────────
@@ -362,6 +407,14 @@ export class GoodmemClient {
     return res.embedders ?? [];
   }
 
+  async getEmbedder(id: string): Promise<Embedder> {
+    return this.request<Embedder>("GET", `/v1/embedders/${id}`);
+  }
+
+  async deleteEmbedder(id: string): Promise<void> {
+    await this.request<void>("DELETE", `/v1/embedders/${id}`);
+  }
+
   // ── Spaces ──────────────────────────────────────────────────────────────
 
   async createSpace(params: CreateSpaceParams): Promise<Space> {
@@ -467,18 +520,32 @@ export class GoodmemClient {
     return res.memories ?? [];
   }
 
+  async batchGetMemories(memoryIds: string[]): Promise<Memory[]> {
+    const res = await this.request<{ memories: Memory[] }>(
+      "POST",
+      "/v1/memories:batchGet",
+      { requests: memoryIds.map(id => ({ memoryId: id })) }
+    );
+    return res.memories ?? [];
+  }
+
   // ── Retrieval ───────────────────────────────────────────────────────────
 
   async retrieveMemories(params: RetrieveParams): Promise<RetrieveResult> {
     const body: Record<string, unknown> = {
       message: params.message,
-      spaceKeys: [
+    };
+    // Use explicit spaceKeys if provided, otherwise construct from single spaceId
+    if (params.spaceKeys !== undefined) {
+      body.spaceKeys = params.spaceKeys;
+    } else {
+      body.spaceKeys = [
         {
           spaceId: params.spaceId,
           ...(params.filter !== undefined && { filter: params.filter }),
         },
-      ],
-    };
+      ];
+    }
     if (params.requestedSize !== undefined)
       body.requestedSize = params.requestedSize;
     if (params.fetchMemory !== undefined)
@@ -546,5 +613,55 @@ export class GoodmemClient {
 
   async deleteLLM(id: string): Promise<void> {
     await this.request<void>("DELETE", `/v1/llms/${id}`);
+  }
+
+  async getLLM(id: string): Promise<LLM> {
+    return this.request<LLM>("GET", `/v1/llms/${id}`);
+  }
+
+  // ── Rerankers ─────────────────────────────────────────────────────────────
+
+  async createReranker(params: CreateRerankerParams): Promise<Reranker> {
+    const body: Record<string, unknown> = {
+      displayName: params.displayName,
+      providerType: params.providerType,
+      endpointUrl: params.endpointUrl,
+      modelIdentifier: params.modelIdentifier,
+    };
+    if (params.apiPath !== undefined) body.apiPath = params.apiPath;
+    if (params.credentials !== undefined) body.credentials = params.credentials;
+
+    return this.request<Reranker>("POST", "/v1/rerankers", body);
+  }
+
+  async listRerankers(): Promise<Reranker[]> {
+    const res = await this.request<{ rerankers: Reranker[] }>(
+      "GET",
+      "/v1/rerankers"
+    );
+    return res.rerankers ?? [];
+  }
+
+  async getReranker(id: string): Promise<Reranker> {
+    return this.request<Reranker>("GET", `/v1/rerankers/${id}`);
+  }
+
+  async deleteReranker(id: string): Promise<void> {
+    await this.request<void>("DELETE", `/v1/rerankers/${id}`);
+  }
+
+  // ── OCR ──────────────────────────────────────────────────────────────────
+
+  async ocrDocument(params: OcrRequest): Promise<OcrResponse> {
+    const body: Record<string, unknown> = {
+      content: params.content,
+    };
+    if (params.format !== undefined) body.format = params.format;
+    if (params.startPage !== undefined) body.startPage = params.startPage;
+    if (params.endPage !== undefined) body.endPage = params.endPage;
+    if (params.includeMarkdown !== undefined) body.includeMarkdown = params.includeMarkdown;
+    if (params.includeRawJson !== undefined) body.includeRawJson = params.includeRawJson;
+
+    return this.request<OcrResponse>("POST", "/v1/ocr:document", body);
   }
 }
